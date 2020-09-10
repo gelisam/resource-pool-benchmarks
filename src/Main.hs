@@ -21,10 +21,10 @@ main = do
 
 
   let configs = [ Config {..} |
-          stripes  <- [1 .. 20],
+          stripes  <- [1 .. 30],
           openTime <- [60],
-          poolSize <- [1..20],
-          threadCount <- [1 .. 40],
+          poolSize <- [1 .. 30],
+          threadCount <- [1 .. 30],
           testTime <- [10]
         ]
 
