@@ -1,8 +1,6 @@
 
 import Data.Pool
 import Control.Concurrent
-import Control.Concurrent.Async
-import Data.IORef
 import Data.Atomics.Counter
 import Control.Monad
 import Data.Time
