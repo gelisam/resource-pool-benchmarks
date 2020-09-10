@@ -18,8 +18,6 @@ data Config = Config
 
 main :: IO ()
 main = do
-
-
   let configs = [ Config {..} |
           stripes  <- [1 .. 30],
           openTime <- [60],
