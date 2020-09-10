@@ -34,7 +34,10 @@ testRun Config {..} = do
 
   takeCounter <- newCounter 0
 
-  threads <- replicateM threadCount $ forkIO $ forever $ withResource pool $ \_ -> incrCounter_ 1 takeCounter
+  threads <- replicateM threadCount $ forkIO $ forever $ withResource pool $ \_ -> do
+    -- I slow everything down to not just measure contention on the counter
+    threadDelay 1000
+    incrCounter_ 1 takeCounter
 
   threadDelay $ testTime * 1000000
   mapM_ killThread threads
