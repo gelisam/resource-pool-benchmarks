@@ -23,6 +23,12 @@ dependencies:
 - base >= 4.7 && < 5
 - criterion
 - resource-pool
+- async
+- time
+- atomic-primops
+
+default-extensions:
+  - RecordWildCards
 
 executables:
   resource-pool-benchmarks-exe:
