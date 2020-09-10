@@ -20,7 +20,7 @@ main = do
           stripes  <- [1 .. 30],
           openTime <- [60],
           poolSize <- [1 .. 30],
-          threadCount <- [1 .. 30],
+          threadCount <- ([1..9] ++ [10, 20 .. 99] ++ [100, 200 .. 1000]),
           testTime <- [10]
         ]
 
