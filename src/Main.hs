@@ -17,30 +17,32 @@ data Config = Config
 main :: IO ()
 main = do
   let configs = [ Config {..} |
-          stripes  <- [1 .. 30],
+          stripes  <- ([1 .. 9] ++ [10, 20 .. 99] ++ [100, 200 .. 999] ++ [1000, 2000]),
           openTime <- [60],
-          poolSize <- [1 .. 30],
-          threadCount <- ([1..9] ++ [10, 20 .. 99] ++ [100, 200 .. 1000]),
+          poolSize <- ([1 .. 9] ++ [10, 20 .. 99] ++ [100, 200 .. 999] ++ [1000, 2000]),
+          threadCount <- ([10, 20 .. 99] ++ [100, 200 .. 999] ++ [1000, 2000]),
           testTime <- [10]
         ]
 
   putStrLn "Test Time, Open Time, Stripes, Pool Size, Thread Count, Updates"
 
-  mapM_ testRun configs
+  mapM_ testRun $ filter (\Config {..} -> stripes * poolSize == (threadCount * 2)) $ reverse configs
 
 testRun :: Config -> IO ()
 testRun Config {..} = do
-  pool <- createPool (pure ()) (const $ pure ()) stripes openTime poolSize
+  totalCounter <- newCounter 0
+  let totalize otherCounter =
+        flip incrCounter_ totalCounter =<< readCounter otherCounter
+  pool <- createPool (newCounter 0) totalize stripes openTime poolSize
 
-  takeCounter <- newCounter 0
-
-  threads <- replicateM threadCount $ forkIO $ forever $ withResource pool $ \_ -> do
-    -- I slow everything down to not just measure contention on the counter
-    threadDelay 1
-    incrCounter_ 1 takeCounter
+  threads <- replicateM threadCount $ forkIO $ forever $ withResource pool $ \theCounter -> do
+    incrCounter_ 1 theCounter
+    yield
 
   threadDelay $ testTime * 1000000
   mapM_ killThread threads
+
+  destroyAllResources pool
 
   let message count = intercalate ","
         [ show testTime
@@ -50,4 +52,4 @@ testRun Config {..} = do
         , show threadCount
         , show count
         ]
-  putStrLn . message =<< readCounter takeCounter
+  putStrLn . message =<< readCounter totalCounter
