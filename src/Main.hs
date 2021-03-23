@@ -6,6 +6,7 @@ import Control.Monad
 import Data.Time
 import Data.List
 
+
 data Config = Config
   { stripes     :: Int
   , openTime    :: NominalDiffTime
@@ -16,20 +17,16 @@ data Config = Config
 
 main :: IO ()
 main = do
-  let configs = [ Config {..} |
-          stripes  <- ([1 .. 9] ++ [10, 20 .. 99] ++ [100, 200 .. 999] ++ [1000, 2000]),
-          openTime <- [60],
-          poolSize <- ([1 .. 9] ++ [10, 20 .. 99] ++ [100, 200 .. 999] ++ [1000, 2000]),
-          threadCount <- ([10, 20 .. 99] ++ [100, 200 .. 999] ++ [1000, 2000]),
-          testTime <- [10]
-        ]
+  testPool $ Config
+    { stripes     = 1
+    , openTime    = 1
+    , poolSize    = 10
+    , threadCount = 100
+    , testTime    = 10
+    }
 
-  putStrLn "Test Time, Open Time, Stripes, Pool Size, Thread Count, Updates"
-
-  mapM_ testRun $ filter (\Config {..} -> stripes * poolSize == (threadCount * 2)) $ reverse configs
-
-testRun :: Config -> IO ()
-testRun Config {..} = do
+testPool :: Config -> IO ()
+testPool Config {..} = do
   totalCounter <- newCounter 0
   let totalize otherCounter =
         flip incrCounter_ totalCounter =<< readCounter otherCounter
@@ -44,12 +41,7 @@ testRun Config {..} = do
 
   destroyAllResources pool
 
-  let message count = intercalate ","
-        [ show testTime
-        , show openTime
-        , show stripes
-        , show poolSize
-        , show threadCount
-        , show count
-        ]
-  putStrLn . message =<< readCounter totalCounter
+  count <- readCounter totalCounter
+  print ("Data.Pool", count)
+
+
